@@ -9,55 +9,53 @@
         body { background: #0a0e1a; font-family: 'Segoe UI', system-ui, sans-serif; color: #fff; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         .game-wrapper { width: 100%; max-width: 500px; height: 100vh; max-height: 800px; margin: 0 auto; position: relative; background: #0a0e1a; border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.04); }
         canvas { display: block; width: 100%; height: 100%; touch-action: none; background: #0a0e1a; }
-        .ui-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
-        .ui-overlay > * { pointer-events: auto; }
-        .menu { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.92); backdrop-filter: blur(12px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; z-index: 10; transition: opacity 0.5s ease; }
+        .menu { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.94); backdrop-filter: blur(12px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; z-index: 10; transition: opacity 0.4s ease; }
         .menu.hidden { opacity: 0; pointer-events: none; }
-        .menu h1 { font-size: 2.8rem; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; margin-bottom: 2px; }
-        .menu .sub { font-size: 0.6rem; color: rgba(255,255,255,0.3); letter-spacing: 4px; margin-bottom: 20px; }
-        .menu .creator { position: absolute; bottom: 20px; right: 24px; font-size: 0.5rem; color: rgba(255,255,255,0.15); }
-        .menu .version { position: absolute; bottom: 20px; left: 24px; font-size: 0.5rem; color: rgba(255,255,255,0.15); }
-        .menu-btn { width: 80%; max-width: 280px; padding: 14px; margin: 6px 0; border: none; border-radius: 16px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.25s cubic-bezier(0.4,0,0.2,1); background: rgba(255,255,255,0.04); color: #fff; border: 1px solid rgba(255,255,255,0.06); }
-        .menu-btn:hover { transform: scale(1.04); background: rgba(255,255,255,0.08); }
-        .menu-btn.play { background: linear-gradient(135deg, #4d96ff, #6bcb77); border: none; color: #fff; box-shadow: 0 8px 32px rgba(77,150,255,0.25); }
-        .menu-btn.play:hover { box-shadow: 0 8px 48px rgba(77,150,255,0.4); transform: scale(1.04); }
+        .menu h1 { font-size: 2.6rem; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; margin-bottom: 2px; }
+        .menu .sub { font-size: 0.55rem; color: rgba(255,255,255,0.3); letter-spacing: 4px; margin-bottom: 16px; }
+        .menu .creator { position: absolute; bottom: 16px; right: 20px; font-size: 0.45rem; color: rgba(255,255,255,0.12); }
+        .menu .version { position: absolute; bottom: 16px; left: 20px; font-size: 0.45rem; color: rgba(255,255,255,0.12); }
+        .menu-btn { width: 80%; max-width: 280px; padding: 12px; margin: 4px 0; border: none; border-radius: 14px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.25s; background: rgba(255,255,255,0.04); color: #fff; border: 1px solid rgba(255,255,255,0.06); }
+        .menu-btn:hover { transform: scale(1.03); background: rgba(255,255,255,0.08); }
+        .menu-btn.play { background: linear-gradient(135deg, #4d96ff, #6bcb77); border: none; box-shadow: 0 8px 32px rgba(77,150,255,0.25); }
+        .menu-btn.play:hover { box-shadow: 0 8px 48px rgba(77,150,255,0.4); }
         .menu-btn.locked { opacity: 0.3; cursor: not-allowed; }
         .menu-btn.locked:hover { transform: none; background: rgba(255,255,255,0.04); }
         .settings-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.96); backdrop-filter: blur(16px); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; z-index: 20; }
         .settings-panel.active { display: flex; }
-        .settings-panel h2 { font-size: 1.2rem; margin-bottom: 20px; color: rgba(255,255,255,0.6); letter-spacing: 2px; }
-        .settings-row { width: 90%; max-width: 320px; display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
-        .settings-row .label { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
-        .settings-row .toggle { width: 44px; height: 24px; border-radius: 30px; background: rgba(255,255,255,0.06); cursor: pointer; position: relative; transition: 0.3s; border: none; }
+        .settings-panel h2 { font-size: 1.1rem; margin-bottom: 16px; color: rgba(255,255,255,0.5); letter-spacing: 2px; }
+        .settings-row { width: 90%; max-width: 320px; display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .settings-row .label { font-size: 0.65rem; color: rgba(255,255,255,0.4); }
+        .settings-row .toggle { width: 40px; height: 22px; border-radius: 30px; background: rgba(255,255,255,0.06); cursor: pointer; position: relative; transition: 0.3s; border: none; }
         .settings-row .toggle.active { background: rgba(77,150,255,0.3); }
-        .settings-row .toggle .dot { width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.2); position: absolute; top: 3px; left: 3px; transition: 0.3s; }
-        .settings-row .toggle.active .dot { left: 23px; background: #4d96ff; }
-        .settings-row .color-picker { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.06); background: transparent; cursor: pointer; padding: 2px; }
+        .settings-row .toggle .dot { width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.2); position: absolute; top: 3px; left: 3px; transition: 0.3s; }
+        .settings-row .toggle.active .dot { left: 21px; background: #4d96ff; }
+        .settings-row .color-picker { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.06); background: transparent; cursor: pointer; padding: 2px; }
         .settings-row .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
         .settings-row .color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
-        .settings-back { margin-top: 24px; padding: 10px 40px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+        .settings-back { margin-top: 20px; padding: 8px 36px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.65rem; cursor: pointer; transition: 0.2s; }
         .settings-back:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
         .rating-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.96); backdrop-filter: blur(16px); display: none; flex-direction: column; align-items: center; padding: 20px; z-index: 20; }
         .rating-panel.active { display: flex; }
-        .rating-panel h2 { font-size: 1rem; margin: 16px 0 12px; color: rgba(255,255,255,0.4); letter-spacing: 2px; }
+        .rating-panel h2 { font-size: 1rem; margin: 12px 0 10px; color: rgba(255,255,255,0.4); letter-spacing: 2px; }
         .rating-list { width: 100%; max-width: 380px; flex: 1; overflow-y: auto; padding: 0 8px; }
         .rating-list::-webkit-scrollbar { width: 3px; }
         .rating-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
         .rating-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
-        .rating-item { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.7rem; }
-        .rating-item .rank { color: #ffd93d; font-weight: 700; width: 28px; }
-        .rating-item .name { flex: 1; margin-left: 6px; color: rgba(255,255,255,0.7); }
-        .rating-item .stat { color: #4d96ff; font-weight: 600; margin-left: 8px; }
+        .rating-item { display: flex; justify-content: space-between; padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.65rem; }
+        .rating-item .rank { color: #ffd93d; font-weight: 700; width: 26px; }
+        .rating-item .name { flex: 1; margin-left: 4px; color: rgba(255,255,255,0.7); }
+        .rating-item .stat { color: #4d96ff; font-weight: 600; margin-left: 6px; }
         .rating-item .stat.elo { color: #ffd93d; }
         .rating-item .stat.km { color: #6bcb77; }
         .rating-item .stat.ruby { color: #ff6b6b; }
-        .rating-back { margin-top: 12px; padding: 10px 40px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+        .rating-back { margin-top: 10px; padding: 8px 36px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.65rem; cursor: pointer; }
         .rating-back:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
         .profile-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.96); backdrop-filter: blur(16px); display: none; flex-direction: column; align-items: center; padding: 20px; z-index: 20; }
         .profile-panel.active { display: flex; }
-        .profile-panel h2 { font-size: 1rem; margin: 16px 0 12px; color: rgba(255,255,255,0.4); letter-spacing: 2px; }
-        .profile-stats { width: 100%; max-width: 380px; padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.04); }
-        .profile-stats .stat-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.7rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .profile-panel h2 { font-size: 1rem; margin: 12px 0 10px; color: rgba(255,255,255,0.4); letter-spacing: 2px; }
+        .profile-stats { width: 100%; max-width: 380px; padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px solid rgba(255,255,255,0.04); }
+        .profile-stats .stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.65rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .profile-stats .stat-row:last-child { border-bottom: none; }
         .profile-stats .label { color: rgba(255,255,255,0.3); }
         .profile-stats .value { font-weight: 600; }
@@ -65,43 +63,52 @@
         .profile-stats .value.km { color: #6bcb77; }
         .profile-stats .value.ruby { color: #ff6b6b; }
         .profile-stats .value.speed { color: #4d96ff; }
-        .profile-nick-input { width: 100%; max-width: 380px; display: flex; gap: 8px; margin: 12px 0; }
-        .profile-nick-input input { flex: 1; padding: 8px 14px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.7rem; outline: none; }
+        .profile-nick-input { width: 100%; max-width: 380px; display: flex; gap: 6px; margin: 10px 0; }
+        .profile-nick-input input { flex: 1; padding: 6px 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.65rem; outline: none; }
         .profile-nick-input input:focus { border-color: rgba(77,150,255,0.2); }
-        .profile-nick-input button { padding: 8px 20px; border: none; border-radius: 30px; background: rgba(77,150,255,0.15); color: #4d96ff; font-size: 0.6rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .profile-nick-input button { padding: 6px 16px; border: none; border-radius: 30px; background: rgba(77,150,255,0.15); color: #4d96ff; font-size: 0.55rem; font-weight: 600; cursor: pointer; }
         .profile-nick-input button:hover { background: rgba(77,150,255,0.25); }
-        .profile-back { margin-top: 12px; padding: 10px 40px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+        .profile-back { margin-top: 10px; padding: 8px 36px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.65rem; cursor: pointer; }
         .profile-back:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
-        .hud { position: absolute; top: 12px; left: 16px; right: 16px; display: none; justify-content: space-between; pointer-events: none; z-index: 5; }
-        .hud-left { display: flex; flex-direction: column; gap: 2px; }
-        .hud-right { display: flex; flex-direction: column; gap: 2px; align-items: flex-end; }
-        .hud-item { font-size: 0.55rem; color: rgba(255,255,255,0.5); font-weight: 600; text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
+        .hud { position: absolute; top: 10px; left: 14px; right: 14px; display: none; justify-content: space-between; pointer-events: none; z-index: 5; }
+        .hud-left { display: flex; flex-direction: column; gap: 1px; }
+        .hud-right { display: flex; flex-direction: column; gap: 1px; align-items: flex-end; }
+        .hud-item { font-size: 0.5rem; color: rgba(255,255,255,0.4); font-weight: 600; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
         .hud-item .val { color: #fff; }
         .hud-item .val.elo { color: #ffd93d; }
         .hud-item .val.km { color: #6bcb77; }
         .hud-item .val.speed { color: #4d96ff; }
         .hud-item .val.ruby { color: #ff6b6b; }
-        .result-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.85); backdrop-filter: blur(8px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 15; padding: 30px; }
+        .result-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.88); backdrop-filter: blur(8px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 15; padding: 30px; }
         .result-overlay.active { display: flex; }
-        .result-overlay h2 { font-size: 1.6rem; margin-bottom: 4px; }
-        .result-overlay .sub { font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-bottom: 16px; }
-        .result-overlay .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 320px; margin-bottom: 20px; }
-        .result-overlay .stats-grid .stat-box { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.04); }
-        .result-overlay .stats-grid .stat-box .label { font-size: 0.5rem; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 1px; }
-        .result-overlay .stats-grid .stat-box .value { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
+        .result-overlay h2 { font-size: 1.4rem; margin-bottom: 2px; }
+        .result-overlay .sub { font-size: 0.6rem; color: rgba(255,255,255,0.3); margin-bottom: 12px; }
+        .result-overlay .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; max-width: 300px; margin-bottom: 16px; }
+        .result-overlay .stats-grid .stat-box { background: rgba(255,255,255,0.02); border-radius: 10px; padding: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.04); }
+        .result-overlay .stats-grid .stat-box .label { font-size: 0.45rem; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.5px; }
+        .result-overlay .stats-grid .stat-box .value { font-size: 1rem; font-weight: 700; margin-top: 2px; }
         .result-overlay .stats-grid .stat-box .value.elo { color: #ffd93d; }
         .result-overlay .stats-grid .stat-box .value.km { color: #6bcb77; }
         .result-overlay .stats-grid .stat-box .value.speed { color: #4d96ff; }
         .result-overlay .stats-grid .stat-box .value.ruby { color: #ff6b6b; }
-        .result-overlay .btn-row { display: flex; gap: 12px; }
-        .result-overlay .btn-row button { padding: 10px 28px; border: none; border-radius: 30px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .result-overlay .btn-row { display: flex; gap: 10px; }
+        .result-overlay .btn-row button { padding: 8px 24px; border: none; border-radius: 30px; font-size: 0.65rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .result-overlay .btn-row .retry { background: linear-gradient(135deg, #4d96ff, #6bcb77); color: #fff; }
         .result-overlay .btn-row .retry:hover { transform: scale(1.04); }
         .result-overlay .btn-row .menu-btn-sm { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.4); }
         .result-overlay .btn-row .menu-btn-sm:hover { background: rgba(255,255,255,0.06); }
+        .mode-select { width: 80%; max-width: 280px; display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+        .mode-btn { padding: 10px; border: none; border-radius: 12px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.25s; background: rgba(255,255,255,0.04); color: #fff; border: 1px solid rgba(255,255,255,0.06); }
+        .mode-btn:hover { transform: scale(1.02); background: rgba(255,255,255,0.08); }
+        .mode-btn.play-mode { background: linear-gradient(135deg, #4d96ff, #6bcb77); border: none; color: #fff; }
+        .mode-btn.locked-mode { opacity: 0.3; cursor: not-allowed; }
+        .mode-btn.locked-mode:hover { transform: none; background: rgba(255,255,255,0.04); }
+        .mode-back { margin-top: 8px; padding: 6px 24px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.6rem; cursor: pointer; transition: 0.2s; }
+        .mode-back:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
         @media (max-width: 450px) {
             .menu h1 { font-size: 2rem; }
-            .menu-btn { padding: 12px; font-size: 0.85rem; }
+            .menu-btn { padding: 10px; font-size: 0.8rem; }
+            .mode-btn { padding: 8px; font-size: 0.7rem; }
         }
     </style>
 </head>
@@ -113,13 +120,13 @@
     <!-- HUD -->
     <div class="hud" id="hud">
         <div class="hud-left">
-            <div class="hud-item">Скорость <span class="val speed" id="hudSpeed">0</span> км/ч</div>
-            <div class="hud-item">Км <span class="val km" id="hudKm">0</span></div>
+            <div class="hud-item">⚡ <span class="val speed" id="hudSpeed">0</span> км/ч</div>
+            <div class="hud-item">📏 <span class="val km" id="hudKm">0</span> км</div>
         </div>
         <div class="hud-right">
-            <div class="hud-item">Эло <span class="val elo" id="hudElo">1000</span></div>
-            <div class="hud-item">Рубины <span class="val ruby" id="hudRuby">0</span></div>
-            <div class="hud-item">Монеты <span class="val" id="hudCoins" style="color:#ffd700;">0</span></div>
+            <div class="hud-item">🏆 <span class="val elo" id="hudElo">1000</span></div>
+            <div class="hud-item">💎 <span class="val ruby" id="hudRuby">0</span></div>
+            <div class="hud-item">🪙 <span class="val" id="hudCoins" style="color:#ffd700;">0</span></div>
         </div>
     </div>
 
@@ -127,18 +134,29 @@
     <div class="menu" id="mainMenu">
         <h1>MOROLS DRIVE</h1>
         <div class="sub">СТУЛЬНАЯ ГОНКА</div>
-        <button class="menu-btn play" onclick="startGame()">▶ ИГРАТЬ</button>
+        <button class="menu-btn play" onclick="showModes()">▶ ИГРАТЬ</button>
         <button class="menu-btn" onclick="openSettings()">⚙ НАСТРОЙКИ</button>
         <button class="menu-btn" onclick="openRating()">🏆 РЕЙТИНГ</button>
         <button class="menu-btn" onclick="openProfile()">👤 ПРОФИЛЬ</button>
-        <button class="menu-btn locked" onclick="showLocked()">🔒 МАГАЗИН</button>
+        <button class="menu-btn locked" onclick="alert('🔒 Магазин будет в следующем обновлении!')">🛒 МАГАЗИН</button>
         <div class="version">версия 0.1.0 release</div>
         <div class="creator">игра создана spkai</div>
     </div>
 
+    <!-- ВЫБОР РЕЖИМА -->
+    <div class="menu hidden" id="modeMenu">
+        <h1 style="font-size:1.6rem;">ВЫБЕРИ РЕЖИМ</h1>
+        <div class="mode-select">
+            <button class="mode-btn play-mode" onclick="startGame()">🚗 Езда на стуле</button>
+            <button class="mode-btn locked-mode" onclick="alert('🔒 Режим будет в обновлении 0.2.0!')">🔒 Режим 2</button>
+            <button class="mode-btn locked-mode" onclick="alert('🔒 Режим будет в обновлении 0.3.0!')">🔒 Режим 3</button>
+        </div>
+        <button class="mode-back" onclick="backToMainMenu()">← НАЗАД</button>
+    </div>
+
     <!-- НАСТРОЙКИ -->
     <div class="settings-panel" id="settingsPanel">
-        <h2>НАСТРОЙКИ</h2>
+        <h2>⚙ НАСТРОЙКИ</h2>
         <div class="settings-row">
             <span class="label">🎵 Музыка</span>
             <button class="toggle active" id="musicToggle" onclick="toggleMusic()"><span class="dot"></span></button>
@@ -168,11 +186,11 @@
         <h2>👤 ПРОФИЛЬ</h2>
         <div class="profile-stats" id="profileStats">
             <div class="stat-row"><span class="label">Ник</span><span class="value" id="profileNick" style="color:#4d96ff;">Игрок</span></div>
-            <div class="stat-row"><span class="label">Эло</span><span class="value elo" id="profileElo">1000</span></div>
-            <div class="stat-row"><span class="label">Километры</span><span class="value km" id="profileKm">0</span></div>
-            <div class="stat-row"><span class="label">Макс. скорость</span><span class="value speed" id="profileSpeed">0</span></div>
-            <div class="stat-row"><span class="label">Рубины</span><span class="value ruby" id="profileRuby">0</span></div>
-            <div class="stat-row"><span class="label">Монеты</span><span class="value" id="profileCoins" style="color:#ffd700;">0</span></div>
+            <div class="stat-row"><span class="label">🏆 Эло</span><span class="value elo" id="profileElo">1000</span></div>
+            <div class="stat-row"><span class="label">📏 Километры</span><span class="value km" id="profileKm">0</span></div>
+            <div class="stat-row"><span class="label">⚡ Макс. скорость</span><span class="value speed" id="profileSpeed">0</span></div>
+            <div class="stat-row"><span class="label">💎 Рубины</span><span class="value ruby" id="profileRuby">0</span></div>
+            <div class="stat-row"><span class="label">🪙 Монеты</span><span class="value" id="profileCoins" style="color:#ffd700;">0</span></div>
         </div>
         <div class="profile-nick-input">
             <input type="text" id="nickInput" placeholder="Новый ник" maxlength="16">
@@ -186,10 +204,10 @@
         <h2 id="resultTitle">💥 АВАРИЯ</h2>
         <div class="sub" id="resultSub">Вы разбились на скорости</div>
         <div class="stats-grid" id="resultStats">
-            <div class="stat-box"><div class="label">Эло</div><div class="value elo" id="resultElo">+0</div></div>
-            <div class="stat-box"><div class="label">Километры</div><div class="value km" id="resultKm">0</div></div>
-            <div class="stat-box"><div class="label">Макс. скорость</div><div class="value speed" id="resultSpeed">0</div></div>
-            <div class="stat-box"><div class="label">Рубины</div><div class="value ruby" id="resultRuby">0</div></div>
+            <div class="stat-box"><div class="label">🏆 Эло</div><div class="value elo" id="resultElo">+0</div></div>
+            <div class="stat-box"><div class="label">📏 Км</div><div class="value km" id="resultKm">0</div></div>
+            <div class="stat-box"><div class="label">⚡ Скорость</div><div class="value speed" id="resultSpeed">0</div></div>
+            <div class="stat-box"><div class="label">💎 Рубины</div><div class="value ruby" id="resultRuby">0</div></div>
         </div>
         <div class="btn-row">
             <button class="retry" onclick="startGame()">🔄 ЕЩЁ РАЗ</button>
@@ -215,7 +233,7 @@ document.addEventListener('contextmenu', function(e) {
     return false;
 });
 
-// === FIREBASE ===
+// === ВСТАВЬ СВОЙ КОНФИГ FIREBASE ЗДЕСЬ ===
 const firebaseConfig = {
     apiKey: "AIzaSyA0HHpRGxpabBBEN1YBaua3i5np2kJDP6g",
     authDomain: "pixbattle-4836b.firebaseapp.com",
@@ -278,22 +296,13 @@ function resizeCanvas() {
     canvas.style.height = rect.height + 'px';
     W = canvas.width;
     H = canvas.height;
-    drawMenuBg();
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-function drawMenuBg() {
-    ctx.fillStyle = settings.bgColor;
-    ctx.fillRect(0, 0, W, H);
-}
-
-// === ПОЛОСЫ ===
-const LANE_COUNT = 3;
-
 function getLaneX(lane) {
     const totalWidth = W * 0.7;
-    const laneW = totalWidth / LANE_COUNT;
+    const laneW = totalWidth / 3;
     return (W - totalWidth) / 2 + lane * laneW + laneW / 2;
 }
 
@@ -345,9 +354,6 @@ function updateUI() {
     document.getElementById('profileSpeed').textContent = player.maxSpeed;
     document.getElementById('profileRuby').textContent = player.rubies;
     document.getElementById('profileCoins').textContent = player.coins.toFixed(1);
-    document.getElementById('hudElo').textContent = player.elo;
-    document.getElementById('hudRuby').textContent = player.rubies;
-    document.getElementById('hudCoins').textContent = player.coins.toFixed(1);
 }
 
 // === РЕЙТИНГ ===
@@ -376,8 +382,8 @@ function loadRating() {
                 <span class="rank">${medal}</span>
                 <span class="name">${p.nick || p.key}</span>
                 <span class="stat elo">${p.elo || 0}</span>
-                <span class="stat km">${(p.km || 0).toFixed(1)} км</span>
-                <span class="stat ruby">${p.rubies || 0}💎</span>
+                <span class="stat km">${(p.km || 0).toFixed(1)}</span>
+                <span class="stat ruby">${p.rubies || 0}</span>
             </div>`;
         });
         list.innerHTML = html;
@@ -449,7 +455,6 @@ function toggleSound() {
 function changeBg(color) {
     settings.bgColor = color;
     document.getElementById('gameWrapper').style.background = color;
-    drawMenuBg();
 }
 
 // === ЗВУКИ ===
@@ -524,6 +529,16 @@ function playRuby() {
 }
 
 // === МЕНЮ ===
+function showModes() {
+    document.getElementById('mainMenu').classList.add('hidden');
+    document.getElementById('modeMenu').classList.remove('hidden');
+}
+
+function backToMainMenu() {
+    document.getElementById('modeMenu').classList.add('hidden');
+    document.getElementById('mainMenu').classList.remove('hidden');
+}
+
 function openSettings() {
     document.getElementById('settingsPanel').classList.add('active');
 }
@@ -550,10 +565,6 @@ function closeProfile() {
     document.getElementById('profilePanel').classList.remove('active');
 }
 
-function showLocked() {
-    alert('🔒 Магазин будет доступен в следующем обновлении!');
-}
-
 function changeNick() {
     const input = document.getElementById('nickInput');
     const newNick = input.value.trim();
@@ -577,6 +588,7 @@ function changeNick() {
 
 // === ИГРА ===
 function startGame() {
+    document.getElementById('modeMenu').classList.add('hidden');
     document.getElementById('mainMenu').classList.add('hidden');
     document.getElementById('hud').style.display = 'flex';
     document.getElementById('resultOverlay').classList.remove('active');
@@ -596,11 +608,11 @@ function startGame() {
     
     document.getElementById('hudSpeed').textContent = '0';
     document.getElementById('hudKm').textContent = '0';
+    document.getElementById('hudElo').textContent = player.elo;
+    document.getElementById('hudRuby').textContent = player.rubies;
+    document.getElementById('hudCoins').textContent = player.coins.toFixed(1);
     canvas.style.cursor = 'none';
     canvas.focus();
-    
-    // Обновляем эло в HUD
-    document.getElementById('hudElo').textContent = player.elo;
 }
 
 function backToMenu() {
@@ -608,9 +620,9 @@ function backToMenu() {
     game.over = true;
     document.getElementById('hud').style.display = 'none';
     document.getElementById('mainMenu').classList.remove('hidden');
+    document.getElementById('modeMenu').classList.add('hidden');
     document.getElementById('resultOverlay').classList.remove('active');
     canvas.style.cursor = 'default';
-    drawMenuBg();
     updateUI();
 }
 
@@ -738,14 +750,14 @@ function draw() {
     const roadW = W * 0.7;
     const roadX = (W - roadW) / 2;
     
-    ctx.fillStyle = 'rgba(40,50,70,0.4)';
+    ctx.fillStyle = 'rgba(40,50,70,0.3)';
     ctx.fillRect(roadX, 0, roadW, H);
     
-    const laneW = roadW / LANE_COUNT;
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    const laneW = roadW / 3;
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
     ctx.lineWidth = 2;
     ctx.setLineDash([20, 30]);
-    for (let i = 1; i < LANE_COUNT; i++) {
+    for (let i = 1; i < 3; i++) {
         const x = roadX + i * laneW;
         ctx.beginPath();
         ctx.moveTo(x, 0);
@@ -754,7 +766,7 @@ function draw() {
     }
     ctx.setLineDash([]);
     
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
     ctx.lineWidth = 2;
     ctx.strokeRect(roadX, 0, roadW, H);
     
@@ -903,7 +915,6 @@ function init() {
     loadProfile();
     playMusic();
     updateUI();
-    drawMenuBg();
     gameLoop();
 }
 
