@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Активация премиум</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        body { background: #0a0e1a; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial; margin: 0; }
+        button { padding: 30px 60px; font-size: 32px; background: linear-gradient(135deg,#ffd700,#ff6b6b); border: none; border-radius: 20px; color: #000; font-weight: bold; cursor: pointer; box-shadow: 0 0 60px rgba(255,215,0,0.5); }
+        input { padding: 10px; font-size: 18px; border-radius: 10px; border: 1px solid #555; background: #1a1a2e; color: #fff; width: 200px; text-align: center; margin-bottom: 10px; }
+        .box { text-align: center; }
+        .status { color: #fff; margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2 style="color:#fff;">👑 АКТИВАЦИЯ ПРЕМИУМ</h2>
+    <input id="userId" placeholder="Введите ваш ID" value="0">
+    <br>
+    <button onclick="activatePremium()">👑 ВКЛЮЧИТЬ ПРЕМИУМ</button>
+    <div class="status" id="status">Введи свой ID и нажми кнопку</div>
+</div>
+
+<script>
+// ТВОЙ FIREBASE
+const firebaseConfig = {
+    apiKey: "AIzaSyABsgEZ-zYAHpaLiZhfURyNdI-ig7T04a4",
+    authDomain: "morolsgame1.firebaseapp.com",
+    projectId: "morolsgame1",
+    storageBucket: "morolsgame1.firebasestorage.app",
+    messagingSenderId: "153801536972",
+    appId: "1:153801536972:web:7715782c124bc9adc41969",
+    databaseURL: "https://morolsgame1-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+function activatePremium() {
+    const id = parseInt(document.getElementById('userId').value);
+    const status = document.getElementById('status');
+    
+    if (isNaN(id)) {
+        status.textContent = '❌ Введи нормальный ID!';
+        status.style.color = '#ff6b6b';
+        return;
+    }
+    
+    status.textContent = '⏳ Проверяю аккаунт...';
+    status.style.color = '#ffd93d';
+    
+    db.ref('accounts/' + id).once('value', snap => {
+        if (!snap.exists()) {
+            status.textContent = '❌ Аккаунт с ID ' + id + ' не найден!';
+            status.style.color = '#ff6b6b';
+            return;
+        }
+        
+        const data = snap.val();
+        
+        // ВКЛЮЧАЕМ ПРЕМИУМ
+        db.ref('accounts/' + id + '/premium').set(true).then(() => {
+            status.textContent = '✅ ПРЕМИУМ ВКЛЮЧЕН для ID ' + id + '! Ник: ' + data.nick;
+            status.style.color = '#6bcb77';
+            
+            // ПРОВЕРЯЕМ
+            db.ref('accounts/' + id + '/premium').once('value', snap2 => {
+                if (snap2.val() === true) {
+                    status.textContent = '✅✅✅ ПОДТВЕРЖДЕНО! Премиум активен для ' + data.nick + ' (ID:' + id + ')';
+                }
+            });
+        }).catch(err => {
+            status.textContent = '❌ Ошибка: ' + err.message;
+            status.style.color = '#ff6b6b';
+        });
+    });
+}
+</script>
+</body>
+</html>
