@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Morols Drive</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        body { background: #0a0e1a; font-family: 'Segoe UI', system-ui, sans-serif; color: #fff; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .game-wrapper { width: 100%; max-width: 700px; height: 100vh; max-height: 900px; margin: 0 auto; position: relative; background: #0a0e1a; border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.04); }
+        .game-wrapper.pc-wide { max-width: 800px; }
+        .game-wrapper.phone-mode { max-width: 100%; max-height: 100vh; border-radius: 0; }
+        canvas { display: block; width: 100%; height: 100%; touch-action: none; background: #0a0e1a; position: relative; z-index: 1; }
+        .menu { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.92); backdrop-filter: blur(12px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; z-index: 10; transition: opacity 0.4s ease; }
+        .menu.hidden { opacity: 0; pointer-events: none; }
+        .menu .title-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .menu .title-wrap .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .menu .title-wrap .splash { font-size: 0.65rem; color: #ffd93d; background: rgba(255,217,61,0.12); padding: 2px 12px; border-radius: 30px; border: 1px solid rgba(255,217,61,0.15); font-weight: 500; }
+        .menu .title-wrap .recommend { font-size: 0.5rem; color: rgba(255,255,255,0.15); letter-spacing: 1px; }
+        .menu h1 { font-size: 2.6rem; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
+        .menu .sub { font-size: 0.55rem; color: rgba(255,255,255,0.3); letter-spacing: 4px; margin: 0 0 12px 0; }
+        .menu .version { position: absolute; bottom: 20px; left: 24px; font-size: 0.8rem; color: rgba(255,255,255,0.2); font-weight: 600; }
+        .menu .creator { position: absolute; bottom: 20px; right: 24px; font-size: 0.8rem; color: rgba(255,255,255,0.2); font-weight: 600; }
+        .menu-btn { width: 80%; max-width: 320px; padding: 11px; margin: 4px 0; border: none; border-radius: 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.04); color: #fff; border: 1px solid rgba(255,255,255,0.06); }
+        .menu-btn:hover { transform: scale(1.02); background: rgba(255,255,255,0.08); }
+        .menu-btn.play { background: linear-gradient(135deg, #4d96ff, #6bcb77); border: none; box-shadow: 0 8px 32px rgba(77,150,255,0.25); }
+        .menu-btn.soon { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.15); color: #ffd700; }
+        .settings-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.96); backdrop-filter: blur(16px); display: none; flex-direction: column; align-items: center; justify-content: flex-start; padding: 30px 20px; z-index: 20; overflow-y: auto; }
+        .settings-panel.active { display: flex; }
+        .settings-panel h2 { font-size: 1.1rem; margin: 10px 0 14px; color: rgba(255,255,255,0.5); letter-spacing: 2px; }
+        .settings-row { width: 100%; max-width: 360px; display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .settings-row .label { font-size: 0.6rem; color: rgba(255,255,255,0.4); }
+        .settings-row .toggle { width: 38px; height: 20px; border-radius: 30px; background: rgba(255,255,255,0.06); cursor: pointer; position: relative; transition: 0.3s; border: none; }
+        .settings-row .toggle.active { background: rgba(77,150,255,0.3); }
+        .settings-row .toggle .dot { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,0.2); position: absolute; top: 3px; left: 3px; transition: 0.3s; }
+        .settings-row .toggle.active .dot { left: 21px; background: #4d96ff; }
+        .settings-row .color-picker { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.06); background: transparent; cursor: pointer; padding: 2px; }
+        .settings-row .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+        .settings-row .color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
+        .settings-row input[type="text"] { width: 100px; padding: 4px 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.55rem; outline: none; }
+        .settings-row input[type="text"]:focus { border-color: rgba(77,150,255,0.3); }
+        .settings-back { margin-top: 16px; padding: 8px 36px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.65rem; cursor: pointer; transition: 0.2s; }
+        .settings-back:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
+        .rating-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.96); backdrop-filter: blur(16px); display: none; flex-direction: column; align-items: center; padding: 20px; z-index: 20; }
+        .rating-panel.active { display: flex; }
+        .rating-panel .info { font-size: 0.55rem; color: rgba(255,255,255,0.2); margin-bottom: 8px; text-align: center; }
+        .rating-list { width: 100%; max-width: 380px; flex: 1; overflow-y: auto; padding: 0 8px; }
+        .rating-list::-webkit-scrollbar { width: 3px; }
+        .rating-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+        .rating-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+        .rating-item { display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.6rem; align-items: center; }
+        .rating-item .rank { color: #ffd93d; font-weight: 700; width: 24px; }
+        .rating-item .id { font-size: 0.45rem; color: rgba(255,255,255,0.2); margin-right: 4px; }
+        .rating-item .name { flex: 1; margin-left: 4px; color: rgba(255,255,255,0.7); }
+        .rating-item .stat { color: #4d96ff; font-weight: 600; margin-left: 4px; font-size: 0.5rem; }
+        .rating-item .stat.elo { color: #ffd93d; }
+        .rating-item .stat.km { color: #6bcb77; }
+        .rating-item .stat.ruby { color: #ff6b6b; }
+        .rating-item .stat.speed { color: #4d96ff; }
+        .rating-item .premium-badge { color: #4d96ff; font-size: 0.7rem; margin-left: 4px; }
+        .rating-back { margin-top: 10px; padding: 8px 36px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.65rem; cursor: pointer; }
+        .rating-back:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
+        .profile-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.96); backdrop-filter: blur(16px); display: none; flex-direction: column; align-items: center; padding: 20px; z-index: 20; }
+        .profile-panel.active { display: flex; }
+        .profile-panel h2 { font-size: 1rem; margin: 10px 0 8px; color: rgba(255,255,255,0.4); letter-spacing: 2px; }
+        .profile-stats { width: 100%; max-width: 380px; padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px solid rgba(255,255,255,0.04); }
+        .profile-stats .stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.65rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .profile-stats .stat-row:last-child { border-bottom: none; }
+        .profile-stats .label { color: rgba(255,255,255,0.3); }
+        .profile-stats .value { font-weight: 600; }
+        .profile-stats .value.elo { color: #ffd93d; }
+        .profile-stats .value.km { color: #6bcb77; }
+        .profile-stats .value.ruby { color: #ff6b6b; }
+        .profile-stats .value.speed { color: #4d96ff; }
+        .profile-stats .value.coins { color: #ffd700; }
+        .profile-stats .value.wins { color: #4d96ff; }
+        .profile-account-info { font-size: 0.55rem; color: rgba(255,255,255,0.2); text-align: center; margin-bottom: 6px; }
+        .profile-nick-input { width: 100%; max-width: 380px; display: flex; gap: 6px; margin: 10px 0; }
+        .profile-nick-input input { flex: 1; padding: 6px 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.65rem; outline: none; }
+        .profile-nick-input input:focus { border-color: rgba(77,150,255,0.2); }
+        .profile-nick-input button { padding: 6px 16px; border: none; border-radius: 30px; background: rgba(77,150,255,0.15); color: #4d96ff; font-size: 0.55rem; font-weight: 600; cursor: pointer; }
+        .profile-nick-input button:hover { background: rgba(77,150,255,0.25); }
+        .profile-delete-btn { padding: 6px 20px; border: none; border-radius: 30px; background: rgba(255,50,50,0.1); color: #ff6b6b; font-size: 0.55rem; font-weight: 600; cursor: pointer; margin-top: 4px; transition: 0.2s; }
+        .profile-delete-btn:hover { background: rgba(255,50,50,0.2); }
+        .profile-back { margin-top: 10px; padding: 8px 36px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.65rem; cursor: pointer; }
+        .profile-back:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
+        .hud { position: absolute; top: 10px; left: 14px; right: 14px; display: none; justify-content: space-between; pointer-events: none; z-index: 5; }
+        .hud-left { display: flex; flex-direction: column; gap: 1px; }
+        .hud-right { display: flex; flex-direction: column; gap: 1px; align-items: flex-end; }
+        .hud-item { font-size: 0.55rem; color: rgba(255,255,255,0.5); font-weight: 600; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
+        .hud-item .val { color: #fff; }
+        .hud-item .val.elo { color: #ffd93d; }
+        .hud-item .val.km { color: #6bcb77; }
+        .hud-item .val.speed { color: #4d96ff; }
+        .hud-item .val.ruby { color: #ff6b6b; }
+        .hud-item .val.coins { color: #ffd700; }
+        .mode-select { width: 80%; max-width: 300px; display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+        .mode-btn { padding: 12px; border: none; border-radius: 14px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.25s; background: rgba(255,255,255,0.04); color: #fff; border: 1px solid rgba(255,255,255,0.06); }
+        .mode-btn:hover { transform: scale(1.02); background: rgba(255,255,255,0.08); }
+        .mode-btn.play-mode { background: linear-gradient(135deg, #4d96ff, #6bcb77); border: none; color: #fff; }
+        .mode-btn.online-mode { background: linear-gradient(135deg, #ff6b6b, #ffd93d); border: none; color: #fff; }
+        .mode-btn.locked-mode { opacity: 0.3; cursor: not-allowed; }
+        .mode-back { margin-top: 8px; padding: 6px 24px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.6rem; cursor: pointer; transition: 0.2s; }
+        .mode-back:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
+        .device-select { position: absolute; top: 55px; left: 50%; transform: translateX(-50%); z-index: 12; display: flex; gap: 6px; }
+        .device-select.hidden { display: none; }
+        .device-btn { padding: 4px 14px; border: 1px solid rgba(255,255,255,0.06); border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.4); font-size: 0.6rem; cursor: pointer; transition: 0.2s; }
+        .device-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .device-btn.active { background: rgba(77,150,255,0.15); border-color: rgba(77,150,255,0.3); color: #4d96ff; }
+        .phone-controls { position: absolute; bottom: 30px; left: 0; right: 0; display: none; justify-content: space-between; padding: 0 20px; z-index: 6; pointer-events: none; }
+        .phone-controls button { width: 70px; height: 70px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 2rem; cursor: pointer; pointer-events: auto; backdrop-filter: blur(4px); transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .phone-controls button:active { background: rgba(255,255,255,0.08); transform: scale(0.92); }
+        .phone-controls.visible { display: flex; }
+        .soon-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 50; backdrop-filter: blur(8px); }
+        .soon-modal.active { display: flex; }
+        .soon-modal .content { max-width: 420px; padding: 30px; text-align: center; }
+        .soon-modal .content h2 { color: #ffd700; font-size: 1.4rem; margin-bottom: 10px; }
+        .soon-modal .content p { color: rgba(255,255,255,0.5); font-size: 0.7rem; line-height: 1.8; }
+        .soon-modal .content .close-btn { margin-top: 16px; padding: 8px 30px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.65rem; cursor: pointer; }
+        .soon-modal .content .close-btn:hover { background: rgba(255,255,255,0.06); }
+        .rating-refresh-btn { padding: 4px 12px; border: 1px solid rgba(255,255,255,0.06); border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.4); font-size: 0.5rem; cursor: pointer; transition: 0.2s; margin-left: 6px; }
+        .rating-refresh-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .auth-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.96); backdrop-filter: blur(16px); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; z-index: 30; }
+        .auth-panel.active { display: flex; }
+        .auth-panel h2 { font-size: 1.2rem; margin-bottom: 16px; color: rgba(255,255,255,0.4); letter-spacing: 2px; }
+        .auth-panel input { width: 80%; max-width: 280px; padding: 10px 16px; margin: 4px 0; border-radius: 30px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.8rem; outline: none; text-align: center; }
+        .auth-panel input:focus { border-color: rgba(77,150,255,0.3); }
+        .auth-panel button { padding: 10px 40px; border: none; border-radius: 30px; background: linear-gradient(135deg, #4d96ff, #6bcb77); color: #fff; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-top: 8px; transition: 0.2s; }
+        .auth-panel button:hover { transform: scale(1.04); }
+        .auth-panel .err { color: #ff6b6b; font-size: 0.6rem; margin-top: 6px; }
+        .auth-panel .switch-btn { background: none; border: none; color: rgba(255,255,255,0.3); font-size: 0.6rem; cursor: pointer; margin-top: 8px; }
+        .auth-panel .switch-btn:hover { color: rgba(255,255,255,0.5); }
+        .delete-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 50; backdrop-filter: blur(8px); }
+        .delete-modal.active { display: flex; }
+        .delete-modal .content { max-width: 360px; padding: 24px; text-align: center; background: #161b22; border-radius: 20px; border: 1px solid #30363d; }
+        .delete-modal .content h3 { color: #ff6b6b; font-size: 1.1rem; margin-bottom: 8px; }
+        .delete-modal .content p { color: rgba(255,255,255,0.5); font-size: 0.65rem; line-height: 1.6; margin-bottom: 12px; }
+        .delete-modal .content input { width: 100%; padding: 8px 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.7rem; outline: none; text-align: center; margin-bottom: 8px; }
+        .delete-modal .content input:focus { border-color: rgba(255,50,50,0.3); }
+        .delete-modal .content .btn-row { display: flex; gap: 8px; justify-content: center; }
+        .delete-modal .content .btn-row button { padding: 8px 20px; border: none; border-radius: 30px; font-size: 0.6rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .delete-modal .content .btn-row .confirm-delete { background: #da3633; color: #fff; }
+        .delete-modal .content .btn-row .confirm-delete:hover { background: #f85149; }
+        .delete-modal .content .btn-row .cancel-delete { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); }
+        .delete-modal .content .btn-row .cancel-delete:hover { background: rgba(255,255,255,0.06); }
+        .searching-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,14,26,0.92); backdrop-filter: blur(8px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 25; }
+        .searching-overlay.active { display: flex; }
+        .searching-overlay .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.04); border-top-color: #4d96ff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .searching-overlay .text { margin-top: 12px; font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+        .searching-overlay .sub { font-size: 0.6rem; color: rgba(255,255,255,0.2); margin-top: 4px; }
+        .searching-overlay .cancel-btn { margin-top: 16px; padding: 6px 24px; border: none; border-radius: 30px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); font-size: 0.6rem; cursor: pointer; }
+        .searching-overlay .cancel-btn:hover { background: rgba(255,255,255,0.06); }
+        
+        /* ПРОСТОЙ ЭКРАН ПОРАЖЕНИЯ - САМЫЙ ВЕРХНИЙ */
+        .crash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            padding: 20px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        .crash-screen.active {
+            display: flex;
+        }
+        .crash-screen h1 {
+            font-size: 2.5rem;
+            color: #ff6b6b;
+            margin-bottom: 5px;
+            text-shadow: 0 0 40px rgba(255,50,50,0.3);
+        }
+        .crash-screen .sub {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+            margin-bottom: 20px;
+        }
+        .crash-screen .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            max-width: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .crash-screen .stat-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+        }
+        .crash-screen .stat-item .label {
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .crash-screen .stat-item .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+        .crash-screen .stat-item .value.elo { color: #ffd93d; }
+        .crash-screen .stat-item .value.ruby { color: #ff6b6b; }
+        .crash-screen .stat-item .value.coins { color: #ffd700; }
+        .crash-screen .stat-item .value.km { color: #6bcb77; }
+        .crash-screen .stat-item .value.speed { color: #4d96ff; }
+        .crash-screen .btns {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .crash-screen .btns button {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .crash-screen .btns .retry {
+            background: linear-gradient(135deg, #4d96ff, #6bcb77);
+            color: #fff;
+        }
+        .crash-screen .btns .retry:hover {
+            transform: scale(1.04);
+        }
+        .crash-screen .btns .menu {
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.4);
+        }
+        .crash-screen .btns .menu:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        
+        @media (max-width: 500px) {
+            .game-wrapper { border-radius: 0; max-height: 100vh; max-width: 100%; }
+            .menu h1 { font-size: 2rem; }
+            .menu-btn { padding: 10px; font-size: 0.75rem; }
+            .mode-btn { padding: 10px; font-size: 0.7rem; }
+            .phone-controls button { width: 56px; height: 56px; font-size: 1.5rem; }
+            .menu .creator, .menu .version { font-size: 0.7rem; }
+            .crash-screen h1 { font-size: 1.8rem; }
+            .crash-screen .stats { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ПРОСТОЙ ЭКРАН ПОРАЖЕНИЯ - ОТДЕЛЬНЫЙ ЭЛЕМЕНТ -->
+<div class="crash-screen" id="crashScreen">
+    <h1 id="crashTitle">💥 МОРОЛС ВРЕЗАЛСЯ...</h1>
+    <div class="sub" id="crashSub">Попробуйте снова!</div>
+    <div class="stats" id="crashStats">
+        <div class="stat-item"><div class="label">🏆 Накоплено Эло</div><div class="value elo" id="crashElo">+0</div></div>
+        <div class="stat-item"><div class="label">💎 Накоплено рубинов</div><div class="value ruby" id="crashRuby">+0</div></div>
+        <div class="stat-item"><div class="label">🪙 Накоплено монет</div><div class="value coins" id="crashCoins">+0</div></div>
+        <div class="stat-item"><div class="label">📏 Проехано км</div><div class="value km" id="crashKm">0.0</div></div>
+        <div class="stat-item" style="grid-column: 1/3;"><div class="label">⚡ Макс скорость</div><div class="value speed" id="crashSpeed">0</div></div>
+    </div>
+    <div class="btns">
+        <button class="retry" onclick="startGame()">🚗 НАЧАТЬ НОВУЮ ИГРУ</button>
+        <button class="menu" onclick="backToMenu()">📋 ВЫЙТИ В МЕНЮ</button>
+    </div>
+</div>
+
+<div class="game-wrapper" id="gameWrapper">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="device-select" id="deviceSelect">
+        <button class="device-btn active" data-device="pc" onclick="setDevice('pc')">ПК</button>
+        <button class="device-btn" data-device="phone" onclick="setDevice('phone')">Телефон</button>
+    </div>
+
+    <div class="phone-controls" id="phoneControls">
+        <button id="phoneLeft">◀</button>
+        <button id="phoneRight">▶</button>
+    </div>
+
+    <div class="hud" id="hud">
+        <div class="hud-left">
+            <div class="hud-item">⚡ <span class="val speed" id="hudSpeed">0</span> км/ч</div>
+            <div class="hud-item">📏 <span class="val km" id="hudKm">0.0</span> км</div>
+        </div>
+        <div class="hud-right">
+            <div class="hud-item">🏆 <span class="val elo" id="hudElo">1000</span></div>
+            <div class="hud-item">💎 <span class="val ruby" id="hudRuby">0</span></div>
+            <div class="hud-item">🪙 <span class="val coins" id="hudCoins">0</span></div>
+        </div>
+    </div>
+
+    <!-- АВТОРИЗАЦИЯ -->
+    <div class="auth-panel" id="authPanel" style="display:flex;">
+        <h2>🔐 ВХОД</h2>
+        <div id="authForm">
+            <input type="text" id="authId" placeholder="ID аккаунта (0, 1, 2...)" value="0">
+            <input type="password" id="authPass" placeholder="Пароль">
+            <button onclick="login()">ВОЙТИ</button>
+            <button class="switch-btn" onclick="showRegister()">Нет аккаунта? Создать</button>
+            <div class="err" id="authErr"></div>
+        </div>
+        <div id="regForm" style="display:none;">
+            <input type="text" id="regPass" placeholder="Пароль (мин 4)">
+            <button onclick="register()">СОЗДАТЬ АККАУНТ</button>
+            <button class="switch-btn" onclick="showLogin()">Уже есть аккаунт? Войти</button>
+            <div class="err" id="regErr"></div>
+        </div>
+    </div>
+
+    <div class="menu hidden" id="mainMenu">
+        <div class="title-wrap">
+            <div class="row">
+                <h1 id="gameTitle">MOROLS DRIVE</h1>
+                <span class="splash" id="splashText">тим хей!</span>
+            </div>
+            <div class="recommend">рекомендуется играть с пк!</div>
+        </div>
+        <div class="sub">СТУЛЬНАЯ ГОНКА</div>
+        <button class="menu-btn play" onclick="showModes()">ИГРАТЬ</button>
+        <button class="menu-btn" onclick="openSettings()">НАСТРОЙКИ</button>
+        <button class="menu-btn" onclick="openRating()">РЕЙТИНГ</button>
+        <button class="menu-btn" onclick="openProfile()">ПРОФИЛЬ</button>
+        <button class="menu-btn soon" onclick="openSoon()">СКОРО</button>
+        <div class="version">версия 0.1.0</div>
+        <div class="creator">игра создана spkai</div>
+    </div>
+
+    <div class="menu hidden" id="modeMenu">
+        <h1 style="font-size:1.8rem;">ВЫБЕРИ РЕЖИМ</h1>
+        <div class="mode-select">
+            <button class="mode-btn play-mode" onclick="startGame()">🚗 Одиночная гонка</button>
+            <button class="mode-btn online-mode" onclick="startOnlineGame()">🌐 Онлайн гонка</button>
+            <button class="mode-btn locked-mode" onclick="alert('🔒 Режим будет в обновлении 0.2.0!')">🔒 Режим 3</button>
+        </div>
+        <button class="mode-back" onclick="backToMainMenu()">← НАЗАД</button>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+        <h2>⚙ НАСТРОЙКИ</h2>
+        <div class="settings-row"><span class="label">🎵 Музыка</span><button class="toggle active" id="musicToggle" onclick="toggleMusic()"><span class="dot"></span></button></div>
+        <div class="settings-row"><span class="label">🔊 Звуки (SFX)</span><button class="toggle active" id="sfxToggle" onclick="toggleSfx()"><span class="dot"></span></button></div>
+        <div class="settings-row"><span class="label">🎨 Фон</span><input type="color" class="color-picker" id="bgColorPicker" value="#0a0e1a" onchange="changeBg(this.value)"></div>
+        <div class="settings-row"><span class="label">🚗 Цвет машин</span><input type="color" class="color-picker" id="carColorPicker" value="#ff6b6b" onchange="changeCarColor(this.value)"></div>
+        <div class="settings-row"><span class="label">🏷️ Название игры</span><input type="text" id="gameTitleInput" value="MOROLS DRIVE" maxlength="20" onchange="changeGameTitle(this.value)"></div>
+        <button class="settings-back" onclick="closeSettings()">← НАЗАД</button>
+    </div>
+
+    <div class="rating-panel" id="ratingPanel">
+        <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin:10px 0 4px;">
+            <h2 style="font-size:1rem; color:rgba(255,255,255,0.4); letter-spacing:2px; margin:0;">🏆 ТОП-10</h2>
+            <button class="rating-refresh-btn" onclick="loadRating()">🔄</button>
+        </div>
+        <div class="info">чтобы попасть в топ наберите 1001+ эло</div>
+        <div class="rating-list" id="ratingList"><div style="text-align:center;color:rgba(255,255,255,0.2);padding:20px;font-size:0.6rem;">Загрузка...</div></div>
+        <button class="rating-back" onclick="closeRating()">← НАЗАД</button>
+    </div>
+
+    <div class="profile-panel" id="profilePanel">
+        <h2>👤 ПРОФИЛЬ</h2>
+        <div class="profile-account-info" id="profileAccountInfo">ID: 0</div>
+        <div class="profile-stats" id="profileStats">
+            <div class="stat-row"><span class="label">Ник</span><span class="value" id="profileNick" style="color:#4d96ff;">Игрок</span></div>
+            <div class="stat-row"><span class="label">🏆 Эло (соло)</span><span class="value elo" id="profileElo">1000</span></div>
+            <div class="stat-row"><span class="label">🌐 Эло (онлайн)</span><span class="value elo" id="profileOnlineElo">1000</span></div>
+            <div class="stat-row"><span class="label">📏 Километры</span><span class="value km" id="profileKm">0.0</span></div>
+            <div class="stat-row"><span class="label">⚡ Макс. скорость</span><span class="value speed" id="profileSpeed">0</span></div>
+            <div class="stat-row"><span class="label">💎 Рубины</span><span class="value ruby" id="profileRuby">0</span></div>
+            <div class="stat-row"><span class="label">🪙 Монеты</span><span class="value coins" id="profileCoins">0</span></div>
+            <div class="stat-row"><span class="label">🏆 Побед (онлайн)</span><span class="value wins" id="profileWins">0</span></div>
+        </div>
+        <div class="profile-nick-input"><input type="text" id="nickInput" placeholder="Новый ник" maxlength="16"><button onclick="changeNick()">СМЕНИТЬ</button></div>
+        <button class="profile-delete-btn" onclick="showDeleteAccount()">🗑️ УДАЛИТЬ АККАУНТ</button>
+        <button class="profile-back" onclick="closeProfile()">← НАЗАД</button>
+    </div>
+
+    <div class="searching-overlay" id="searchingOverlay">
+        <div class="spinner"></div>
+        <div class="text">Поиск противника...</div>
+        <div class="sub">Ожидание другого игрока</div>
+        <button class="cancel-btn" onclick="cancelSearch()">Отмена</button>
+    </div>
+</div>
+
+<div class="soon-modal" id="soonModal">
+    <div class="content">
+        <h2>🚀 СКОРО</h2>
+        <p>Если вы реально хотите продолжения обновлений в данной игре — скажите прямо. Я буду рад делать обновления для того, чтобы игра не была скучной и была интересной и многофункциональной (куча миниигр, функций, приколов).</p>
+        <br>
+        <p style="font-size:0.6rem;color:rgba(255,255,255,0.2);">если вы нашли баги — пишите в тг @arbz7</p>
+        <button class="close-btn" onclick="closeSoon()">ЗАКРЫТЬ</button>
+    </div>
+</div>
+
+<div class="delete-modal" id="deleteModal">
+    <div class="content">
+        <h3>🗑️ УДАЛИТЬ АККАУНТ</h3>
+        <p>Введите ник "<b id="deleteNickConfirm">Игрок</b>" для подтверждения</p>
+        <input type="text" id="deleteInput" placeholder="Введите ник">
+        <div class="btn-row">
+            <button class="confirm-delete" onclick="confirmDeleteAccount()">УДАЛИТЬ</button>
+            <button class="cancel-delete" onclick="closeDeleteModal()">ОТМЕНА</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================
+// MOROLS DRIVE v0.1.0
+// ============================================
+
+// === БЛОКИРОВКА F12 ===
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        return false;
+    }
+});
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// === FIREBASE ===
+const firebaseConfig = {
+    apiKey: "AIzaSyABsgEZ-zYAHpaLiZhfURyNdI-ig7T04a4",
+    authDomain: "morolsgame1.firebaseapp.com",
+    projectId: "morolsgame1",
+    storageBucket: "morolsgame1.firebasestorage.app",
+    messagingSenderId: "153801536972",
+    appId: "1:153801536972:web:7715782c124bc9adc41969",
+    databaseURL: "https://morolsgame1-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// === СПЛЕШ ===
+document.getElementById('splashText').textContent = 'тим хей!';
+
+// === АККАУНТЫ ===
+let currentAccount = null;
+let nextId = 0;
+
+function register() {
+    const pass = document.getElementById('regPass').value.trim();
+    const errEl = document.getElementById('regErr');
+    if (pass.length < 4) { errEl.textContent = 'Пароль минимум 4 символа'; return; }
+    
+    db.ref('accounts').once('value', snap => {
+        const ids = snap.exists() ? Object.keys(snap.val()).map(Number) : [];
+        nextId = ids.length > 0 ? Math.max(...ids) + 1 : 0;
+        const account = { id: nextId, nick: 'Игрок' + nextId, pass, elo: 1000, onlineElo: 1000, km: 0, maxSpeed: 0, rubies: 0, coins: 0, wins: 0, premium: false };
+        db.ref('accounts/' + nextId).set(account);
+        errEl.textContent = '';
+        alert('Аккаунт создан! ID: ' + nextId + ', пароль: ' + pass);
+        showLogin();
+        document.getElementById('authId').value = nextId;
+        document.getElementById('authPass').value = pass;
+    });
+}
+
+function login() {
+    const id = parseInt(document.getElementById('authId').value);
+    const pass = document.getElementById('authPass').value.trim();
+    const errEl = document.getElementById('authErr');
+    if (isNaN(id)) { errEl.textContent = 'Введите ID'; return; }
+    if (!pass) { errEl.textContent = 'Введите пароль'; return; }
+    
+    db.ref('accounts/' + id).once('value', snap => {
+        if (!snap.exists()) { errEl.textContent = 'Аккаунт не найден'; return; }
+        const data = snap.val();
+        if (data.pass !== pass) { errEl.textContent = 'Неверный пароль'; return; }
+        currentAccount = { id, ...data };
+        errEl.textContent = '';
+        document.getElementById('authPanel').style.display = 'none';
+        document.getElementById('mainMenu').classList.remove('hidden');
+        loadSettings();
+        loadProfile();
+        playMusic();
+        updateUI();
+        document.getElementById('profileAccountInfo').textContent = 'ID: ' + id;
+        document.getElementById('deleteNickConfirm').textContent = currentAccount.nick;
+        localStorage.setItem('morols_last_id', id);
+    });
+}
+
+function showRegister() {
+    document.getElementById('authForm').style.display = 'none';
+    document.getElementById('regForm').style.display = 'block';
+    document.getElementById('authErr').textContent = '';
+    document.getElementById('regErr').textContent = '';
+}
+
+function showLogin() {
+    document.getElementById('regForm').style.display = 'none';
+    document.getElementById('authForm').style.display = 'block';
+    document.getElementById('authErr').textContent = '';
+    document.getElementById('regErr').textContent = '';
+}
+
+function showDeleteAccount() { document.getElementById('deleteModal').classList.add('active'); document.getElementById('deleteInput').value = ''; }
+function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+
+function confirmDeleteAccount() {
+    const input = document.getElementById('deleteInput').value.trim();
+    if (input !== currentAccount.nick) { alert('Ник не совпадает!'); return; }
+    if (confirm('Точно удалить аккаунт ' + currentAccount.nick + '? Данные не восстановить!')) {
+        db.ref('accounts/' + currentAccount.id).remove();
+        db.ref('players/' + currentAccount.id).remove();
+        localStorage.removeItem('morols_player_' + currentAccount.id);
+        alert('Аккаунт удалён!');
+        closeDeleteModal();
+        location.reload();
+    }
+}
+
+// === ПРОФИЛЬ ===
+function loadProfile() {
+    if (!currentAccount) return;
+    const key = 'morols_player_' + currentAccount.id;
+    const saved = localStorage.getItem(key);
+    if (saved) { try { const p = JSON.parse(saved); currentAccount = { ...currentAccount, ...p }; } catch(e) {} }
+    db.ref('players/' + currentAccount.id).once('value', snap => {
+        if (snap.exists()) {
+            const data = snap.val();
+            currentAccount.elo = data.elo || 1000;
+            currentAccount.onlineElo = data.onlineElo || 1000;
+            currentAccount.km = data.km || 0;
+            currentAccount.maxSpeed = data.maxSpeed || 0;
+            currentAccount.rubies = data.rubies || 0;
+            currentAccount.coins = data.coins || 0;
+            currentAccount.wins = data.wins || 0;
+            if (data.nick) currentAccount.nick = data.nick;
+            if (data.premium !== undefined) currentAccount.premium = data.premium;
+            else currentAccount.premium = false; 
+            saveLocal();
+            updateUI();
+        } else { saveToFirebase(); }
+    });
+}
+
+function saveLocal() {
+    if (!currentAccount) return;
+    localStorage.setItem('morols_player_' + currentAccount.id, JSON.stringify(currentAccount));
+}
+
+function saveToFirebase() {
+    if (!currentAccount) return;
+    db.ref('players/' + currentAccount.id).set({
+        nick: currentAccount.nick,
+        elo: currentAccount.elo,
+        onlineElo: currentAccount.onlineElo,
+        km: currentAccount.km,
+        maxSpeed: currentAccount.maxSpeed,
+        rubies: currentAccount.rubies,
+        coins: currentAccount.coins,
+        wins: currentAccount.wins,
+        premium: currentAccount.premium || false
+    });
+}
+
+function updateUI() {
+    if (!currentAccount) return;
+    document.getElementById('profileNick').textContent = currentAccount.nick;
+    document.getElementById('profileElo').textContent = currentAccount.elo;
+    document.getElementById('profileOnlineElo').textContent = currentAccount.onlineElo || 1000;
+    document.getElementById('profileKm').textContent = currentAccount.km.toFixed(1);
+    document.getElementById('profileSpeed').textContent = currentAccount.maxSpeed;
+    document.getElementById('profileRuby').textContent = currentAccount.rubies;
+    document.getElementById('profileCoins').textContent = currentAccount.coins.toFixed(1);
+    document.getElementById('profileWins').textContent = currentAccount.wins || 0;
+}
+
+// === РЕЙТИНГ ===
+function loadRating() {
+    const list = document.getElementById('ratingList');
+    list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.2);padding:20px;font-size:0.6rem;">Загрузка...</div>';
+    db.ref('players').orderByChild('elo').once('value', snap => {
+        const players = [];
+        snap.forEach(child => { const p = child.val(); p.key = child.key; players.push(p); });
+        players.sort((a, b) => b.elo - a.elo);
+        const filtered = players.filter(p => p.elo > 1000);
+        if (filtered.length === 0) {
+            list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.2);padding:20px;font-size:0.6rem;">Нет игроков с 1001+ Эло. Сыграйте матч!</div>';
+            return;
+        }
+        let html = '';
+        filtered.slice(0, 10).forEach((p, i) => {
+            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+            const premiumBadge = p.premium === true ? '✅' : '';
+            html += `<div class="rating-item">
+                <span class="rank">${medal}</span>
+                <span class="id">#${p.key}</span>
+                <span class="name">${p.nick || '#' + p.key} <span class="premium-badge">${premiumBadge}</span></span>
+                <span class="stat elo">${p.elo || 0}</span>
+                <span class="stat km">${(p.km || 0).toFixed(1)}</span>
+                <span class="stat ruby">${p.rubies || 0}</span>
+                <span class="stat speed">${p.maxSpeed || 0}</span>
+            </div>`;
+        });
+        list.innerHTML = html;
+    });
+}
+
+// === МУЗЫКА ===
+let audio = null;
+function playMusic() {
+    if (!settings.music) return;
+    if (audio) { audio.pause(); audio = null; }
+    audio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3');
+    audio.loop = true;
+    audio.volume = 0.3;
+    audio.play().catch(() => {});
+}
+function toggleMusic() {
+    settings.music = !settings.music;
+    document.getElementById('musicToggle').classList.toggle('active');
+    localStorage.setItem('morols_music', settings.music);
+    if (settings.music) playMusic();
+    else if (audio) { audio.pause(); audio = null; }
+}
+
+// === ЗВУКИ ===
+let sfxEnabled = true;
+let sfxCtx = null;
+function initSfx() { try { sfxCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+function playSfx(freq = 800, duration = 0.06, type = 'sine') {
+    if (!sfxEnabled || !sfxCtx) return;
+    try {
+        const osc = sfxCtx.createOscillator();
+        const gain = sfxCtx.createGain();
+        osc.connect(gain);
+        gain.connect(sfxCtx.destination);
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.04, sfxCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, sfxCtx.currentTime + duration);
+        osc.start();
+        osc.stop(sfxCtx.currentTime + duration);
+    } catch(e) {}
+}
+function playSfxClick() { playSfx(900, 0.05); }
+function playSfxLane() { playSfx(600, 0.04); }
+function playSfxCrash() { playSfx(120, 0.3, 'sawtooth'); }
+function playSfxRuby() { playSfx(1100, 0.08); }
+function toggleSfx() {
+    sfxEnabled = !sfxEnabled;
+    document.getElementById('sfxToggle').classList.toggle('active');
+    localStorage.setItem('morols_sfx', sfxEnabled);
+}
+
+// === НАСТРОЙКИ ===
+let settings = { music: true, bgColor: '#0a0e1a', carColor: '#ff6b6b', gameTitle: 'MOROLS DRIVE' };
+let deviceMode = 'pc';
+let lastLaneSwitch = 0;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resizeCanvas() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * (devicePixelRatio || 1);
+    canvas.height = rect.height * (devicePixelRatio || 1);
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    W = canvas.width;
+    H = canvas.height;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function getLaneX(lane) {
+    const totalWidth = W * 0.7;
+    const laneW = totalWidth / 3;
+    return (W - totalWidth) / 2 + lane * laneW + laneW / 2;
+}
+
+function setDevice(mode) {
+    deviceMode = mode;
+    document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.device-btn[data-device="${mode}"]`).classList.add('active');
+    document.getElementById('gameWrapper').classList.toggle('phone-mode', mode === 'phone');
+    document.getElementById('gameWrapper').classList.toggle('pc-wide', mode === 'pc');
+    document.getElementById('phoneControls').classList.toggle('visible', mode === 'phone');
+    localStorage.setItem('morols_device', mode);
+    setTimeout(resizeCanvas, 50);
+}
+
+function changeBg(color) {
+    settings.bgColor = color;
+    document.getElementById('gameWrapper').style.background = color;
+    localStorage.setItem('morols_bg', color);
+}
+
+function changeCarColor(color) {
+    settings.carColor = color;
+    localStorage.setItem('morols_carColor', color);
+}
+
+function changeGameTitle(val) {
+    settings.gameTitle = val || 'MOROLS DRIVE';
+    document.querySelector('#mainMenu h1').textContent = settings.gameTitle;
+    localStorage.setItem('morols_title', settings.gameTitle);
+}
+
+function loadSettings() {
+    const bg = localStorage.getItem('morols_bg');
+    if (bg) { settings.bgColor = bg; document.getElementById('gameWrapper').style.background = bg; document.getElementById('bgColorPicker').value = bg; }
+    const carColor = localStorage.getItem('morols_carColor');
+    if (carColor) { settings.carColor = carColor; document.getElementById('carColorPicker').value = carColor; }
+    const title = localStorage.getItem('morols_title');
+    if (title) { settings.gameTitle = title; document.getElementById('gameTitleInput').value = title; document.querySelector('#mainMenu h1').textContent = title; }
+    const music = localStorage.getItem('morols_music');
+    if (music !== null) { settings.music = music === 'true'; document.getElementById('musicToggle').classList.toggle('active', settings.music); }
+    const sfx = localStorage.getItem('morols_sfx');
+    if (sfx !== null) { sfxEnabled = sfx === 'true'; document.getElementById('sfxToggle').classList.toggle('active', sfxEnabled); }
+    if (settings.music) playMusic();
+}
+
+// === МЕНЮ ===
+function showModes() { 
+    document.getElementById('mainMenu').classList.add('hidden'); 
+    document.getElementById('modeMenu').classList.remove('hidden'); 
+    playSfxClick();
+}
+function backToMainMenu() { 
+    document.getElementById('modeMenu').classList.add('hidden'); 
+    document.getElementById('mainMenu').classList.remove('hidden');
+    document.getElementById('hud').style.display = 'none';
+    document.getElementById('deviceSelect').classList.remove('hidden');
+    playSfxClick();
+}
+function openSettings() { 
+    document.getElementById('settingsPanel').classList.add('active'); 
+    playSfxClick();
+}
+function closeSettings() { 
+    document.getElementById('settingsPanel').classList.remove('active'); 
+    playSfxClick();
+}
+function openRating() { 
+    document.getElementById('ratingPanel').classList.add('active'); 
+    loadRating(); 
+    playSfxClick();
+}
+function closeRating() { 
+    document.getElementById('ratingPanel').classList.remove('active'); 
+    playSfxClick();
+}
+function openProfile() { 
+    document.getElementById('profilePanel').classList.add('active'); 
+    updateUI(); 
+    playSfxClick();
+}
+function closeProfile() { 
+    document.getElementById('profilePanel').classList.remove('active'); 
+    playSfxClick();
+}
+function openSoon() { 
+    document.getElementById('soonModal').classList.add('active'); 
+    playSfxClick();
+}
+function closeSoon() { 
+    document.getElementById('soonModal').classList.remove('active'); 
+    playSfxClick();
+}
+
+function changeNick() {
+    const input = document.getElementById('nickInput');
+    const newNick = input.value.trim();
+    if (!newNick || newNick.length < 2 || newNick === currentAccount.nick) return;
+    const id = currentAccount.id;
+    db.ref('accounts/' + id + '/nick').set(newNick);
+    currentAccount.nick = newNick;
+    saveLocal();
+    saveToFirebase();
+    updateUI();
+    document.getElementById('deleteNickConfirm').textContent = newNick;
+    input.value = '';
+    playSfxClick();
+    alert('Ник изменён на ' + newNick);
+}
+
+// === ИГРА ===
+let game = { running: false, over: false, speed: 0, km: 0, maxSpeed: 0, lane: 1, cars: [], rubiesList: [], frame: 0, spawnTimer: 0, rubySpawnTimer: 0, baseSpeed: 3.5 };
+
+function startGame() {
+    // Скрываем ВСЁ
+    document.getElementById('modeMenu').classList.add('hidden');
+    document.getElementById('mainMenu').classList.add('hidden');
+    document.getElementById('crashScreen').classList.remove('active');
+    document.getElementById('settingsPanel').classList.remove('active');
+    document.getElementById('ratingPanel').classList.remove('active');
+    document.getElementById('profilePanel').classList.remove('active');
+    document.getElementById('hud').style.display = 'flex';
+    document.getElementById('deviceSelect').classList.add('hidden');
+    
+    game.running = true; game.over = false; game.speed = 0; game.km = 0; game.maxSpeed = 0; game.lane = 1;
+    game.cars = []; game.rubiesList = []; game.frame = 0; game.spawnTimer = 0; game.rubySpawnTimer = 0; game.baseSpeed = 3.5;
+    game.isOnline = false;
+    game.onlineStarted = false;
+    document.getElementById('hudSpeed').textContent = '0';
+    document.getElementById('hudKm').textContent = '0.0';
+    document.getElementById('hudElo').textContent = currentAccount.elo;
+    document.getElementById('hudRuby').textContent = currentAccount.rubies;
+    document.getElementById('hudCoins').textContent = currentAccount.coins.toFixed(1);
+    canvas.style.cursor = 'none';
+    canvas.focus();
+    playSfxClick();
+}
+
+function backToMenu() {
+    game.running = false; game.over = true;
+    if (game.isOnline) {
+        if (onlineRoom && onlineRoom.key) {
+            db.ref('online_rooms/' + onlineRoom.key).remove();
+        }
+        game.isOnline = false;
+    }
+    document.getElementById('crashScreen').classList.remove('active');
+    document.getElementById('hud').style.display = 'none';
+    document.getElementById('mainMenu').classList.remove('hidden');
+    document.getElementById('modeMenu').classList.add('hidden');
+    document.getElementById('deviceSelect').classList.remove('hidden');
+    document.getElementById('searchingOverlay').classList.remove('active');
+    canvas.style.cursor = 'default';
+    updateUI();
+    playSfxClick();
+}
+
+// === ЭКРАН ПОРАЖЕНИЯ - ПРОСТОЙ И НАДЕЖНЫЙ ===
+function showCrashScreen(elo, km, speed, rubies, coins) {
+    document.getElementById('crashElo').textContent = '+' + elo;
+    document.getElementById('crashKm').textContent = km.toFixed(1);
+    document.getElementById('crashSpeed').textContent = speed;
+    document.getElementById('crashRuby').textContent = '+' + rubies;
+    document.getElementById('crashCoins').textContent = '+' + coins;
+    document.getElementById('crashScreen').classList.add('active');
+    playSfxCrash();
+    console.log('✅ ЭКРАН ПОРАЖЕНИЯ ПОКАЗАН!');
+}
+
+function endGame() {
+    if (game.over) return;
+    game.running = false;
+    game.over = true;
+    
+    const eloGain = Math.round(game.speed);
+    const kmGain = game.km;
+    const coinsGain = Math.round(kmGain * (0.1 + Math.random() * 0.9));
+    const rubyGain = game.rubies;
+    
+    currentAccount.elo += eloGain;
+    currentAccount.km += kmGain;
+    if (game.speed > currentAccount.maxSpeed) currentAccount.maxSpeed = Math.round(game.speed);
+    currentAccount.rubies += rubyGain;
+    currentAccount.coins += coinsGain;
+    
+    saveLocal();
+    saveToFirebase();
+    updateUI();
+    
+    // ПОКАЗЫВАЕМ ЭКРАН
+    showCrashScreen(eloGain, kmGain, Math.round(game.speed), rubyGain, coinsGain);
+}
+
+function updateGame() {
+    if (!game.running || game.over) return;
+    game.frame++;
+    // +1 км/ч КАЖДУЮ СЕКУНДУ
+    if (game.frame % 60 === 0) {
+        game.speed += 1;
+        if (game.speed > game.maxSpeed) game.maxSpeed = game.speed;
+    }
+    game.km += game.speed / 3600;
+    
+    const speedFactor = 1 + (game.speed / 50);
+    for (let i = game.cars.length - 1; i >= 0; i--) {
+        const car = game.cars[i];
+        car.y += game.baseSpeed * speedFactor * car.speed;
+        if (car.y > H + 50) game.cars.splice(i, 1);
+    }
+    for (let i = game.rubiesList.length - 1; i >= 0; i--) {
+        const r = game.rubiesList[i];
+        r.y += game.baseSpeed * speedFactor * 1.2;
+        if (r.y > H + 50) game.rubiesList.splice(i, 1);
+    }
+    
+    game.spawnTimer++;
+    const spawnInterval = Math.max(12, 35 - game.speed * 0.02);
+    if (game.spawnTimer > spawnInterval) { game.spawnTimer = 0; spawnCar(); }
+    
+    game.rubySpawnTimer++;
+    if (game.rubySpawnTimer > 120 + Math.random() * 180) { game.rubySpawnTimer = 0; spawnRuby(); }
+    
+    const playerX = getLaneX(game.lane);
+    const playerY = H * 0.75;
+    for (const car of game.cars) {
+        const cx = getLaneX(car.lane);
+        const cy = car.y;
+        const cw = W * 0.07;
+        const ch = H * 0.09;
+        if (Math.abs(playerX - cx) < cw * 0.55 && Math.abs(playerY - cy) < ch * 0.55) {
+            if (game.isOnline) {
+                endOnlineGame(false);
+            } else {
+                endGame();
+            }
+            return;
+        }
+    }
+    for (let i = game.rubiesList.length - 1; i >= 0; i--) {
+        const r = game.rubiesList[i];
+        const rx = getLaneX(r.lane);
+        const ry = r.y;
+        if (Math.abs(playerX - rx) < W * 0.04 && Math.abs(playerY - ry) < W * 0.04) {
+            game.rubies++;
+            game.rubiesList.splice(i, 1);
+            playSfxRuby();
+        }
+    }
+    document.getElementById('hudSpeed').textContent = Math.round(game.speed);
+    document.getElementById('hudKm').textContent = game.km.toFixed(1);
+    document.getElementById('hudElo').textContent = game.isOnline ? (currentAccount.onlineElo || 1000) : currentAccount.elo + Math.round(game.speed);
+    document.getElementById('hudRuby').textContent = game.rubies;
+}
+
+function spawnCar() {
+    if (game.cars.length >= 2) return;
+    const lane = Math.floor(Math.random() * 3);
+    if (game.cars.some(c => c.lane === lane)) {
+        const freeLanes = [0,1,2].filter(l => !game.cars.some(c => c.lane === l));
+        if (freeLanes.length === 0) return;
+        const newLane = freeLanes[Math.floor(Math.random() * freeLanes.length)];
+        game.cars.push({ lane: newLane, y: -H * 0.15, speed: 0.8 + Math.random() * 0.3 });
+    } else {
+        game.cars.push({ lane: lane, y: -H * 0.15, speed: 0.8 + Math.random() * 0.3 });
+    }
+}
+
+function spawnRuby() {
+    const lane = Math.floor(Math.random() * 3);
+    game.rubiesList.push({ lane: lane, y: -H * 0.1 });
+}
+
+// === ОНЛАЙН ГОНКА ===
+let onlineRoom = null;
+let searchTimeout = null;
+
+function startOnlineGame() {
+    if (!currentAccount) { alert('Войдите в аккаунт'); return; }
+    document.getElementById('modeMenu').classList.add('hidden');
+    document.getElementById('searchingOverlay').classList.add('active');
+    document.getElementById('hud').style.display = 'flex';
+    document.getElementById('crashScreen').classList.remove('active');
+    document.getElementById('deviceSelect').classList.add('hidden');
+    
+    game.running = true; game.over = false; game.speed = 0; game.km = 0; game.maxSpeed = 0; game.lane = 1;
+    game.cars = []; game.rubiesList = []; game.frame = 0; game.spawnTimer = 0; game.rubySpawnTimer = 0; game.baseSpeed = 3.5;
+    game.isOnline = true;
+    game.onlineStarted = false;
+    
+    document.getElementById('hudSpeed').textContent = '0';
+    document.getElementById('hudKm').textContent = '0.0';
+    document.getElementById('hudElo').textContent = currentAccount.onlineElo || 1000;
+    document.getElementById('hudRuby').textContent = currentAccount.rubies;
+    document.getElementById('hudCoins').textContent = currentAccount.coins.toFixed(1);
+    canvas.style.cursor = 'none';
+    canvas.focus();
+    
+    const room = { 
+        id: 'room_' + Date.now(), 
+        player1: currentAccount.id, 
+        player1Nick: currentAccount.nick,
+        status: 'waiting',
+        startTime: null
+    };
+    onlineRoom = room;
+    
+    db.ref('online_rooms').push(room).then(ref => {
+        room.key = ref.key;
+        db.ref('online_rooms').orderByChild('status').equalTo('waiting').once('value', snap => {
+            let found = false;
+            snap.forEach(child => {
+                const r = child.val();
+                if (r.key !== room.key && r.player1 !== currentAccount.id && r.status === 'waiting') {
+                    found = true;
+                    const roomId = child.key;
+                    db.ref('online_rooms/' + roomId).update({
+                        player2: currentAccount.id,
+                        player2Nick: currentAccount.nick,
+                        status: 'playing',
+                        startTime: Date.now()
+                    });
+                    onlineRoom = { ...r, key: roomId, player2: currentAccount.id, player2Nick: currentAccount.nick, status: 'playing' };
+                    document.getElementById('searchingOverlay').classList.remove('active');
+                    showToast('Противник найден!');
+                    listenOnlineRoom(roomId);
+                    return true;
+                }
+            });
+            if (!found) {
+                searchTimeout = setTimeout(() => {
+                    if (onlineRoom && onlineRoom.status === 'waiting') {
+                        db.ref('online_rooms/' + onlineRoom.key).remove();
+                        document.getElementById('searchingOverlay').classList.remove('active');
+                        showToast('Не найден противник');
+                        backToMenu();
+                    }
+                }, 15000);
+            }
+        });
+    });
+}
+
+function listenOnlineRoom(roomId) {
+    db.ref('online_rooms/' + roomId).on('value', snap => {
+        const data = snap.val();
+        if (!data) {
+            if (game.running) {
+                endOnlineGame(null);
+            }
+            return;
+        }
+        if (data.status === 'playing' && data.startTime) {
+            if (!game.onlineStarted) {
+                game.onlineStarted = true;
+                document.getElementById('searchingOverlay').classList.remove('active');
+            }
+        }
+        if (data.winner) {
+            if (data.winner === currentAccount.id) {
+                endOnlineGame(true);
+            } else {
+                endOnlineGame(false);
+            }
+        }
+    });
+}
+
+function endOnlineGame(won) {
+    if (game.over) return;
+    game.running = false;
+    game.over = true;
+    let eloChange = 0;
+    if (won === true) {
+        currentAccount.onlineElo = (currentAccount.onlineElo || 1000) + 15;
+        currentAccount.wins = (currentAccount.wins || 0) + 1;
+        showToast('🏆 Победа! +15 онлайн Эло');
+        eloChange = 15;
+        document.getElementById('crashTitle').textContent = '🏆 ПОБЕДА!';
+        document.getElementById('crashSub').textContent = 'Вы выиграли онлайн гонку!';
+    } else if (won === false) {
+        currentAccount.onlineElo = (currentAccount.onlineElo || 1000) - 10;
+        showToast('💔 Поражение! -10 онлайн Эло');
+        eloChange = -10;
+        document.getElementById('crashTitle').textContent = '💥 ПОРАЖЕНИЕ';
+        document.getElementById('crashSub').textContent = 'Вы проиграли онлайн гонку';
+    } else {
+        document.getElementById('crashTitle').textContent = '⏱️ ВРЕМЯ ВЫШЛО';
+        document.getElementById('crashSub').textContent = 'Игра завершена';
+        eloChange = 0;
+    }
+    saveLocal();
+    saveToFirebase();
+    updateUI();
+    if (onlineRoom && onlineRoom.key) {
+        db.ref('online_rooms/' + onlineRoom.key).update({ winner: won === true ? currentAccount.id : 'opponent' });
+        setTimeout(() => {
+            db.ref('online_rooms/' + onlineRoom.key).remove();
+        }, 3000);
+    }
+    // Показываем экран
+    document.getElementById('crashElo').textContent = (eloChange >= 0 ? '+' : '') + eloChange;
+    document.getElementById('crashKm').textContent = game.km.toFixed(1);
+    document.getElementById('crashSpeed').textContent = Math.round(game.speed);
+    document.getElementById('crashRuby').textContent = '+' + game.rubies;
+    document.getElementById('crashCoins').textContent = '+' + Math.round(game.km * 0.5);
+    document.getElementById('crashScreen').classList.add('active');
+    playSfxCrash();
+}
+
+function cancelSearch() {
+    if (searchTimeout) clearTimeout(searchTimeout);
+    if (onlineRoom && onlineRoom.key) {
+        db.ref('online_rooms/' + onlineRoom.key).remove();
+    }
+    document.getElementById('searchingOverlay').classList.remove('active');
+    backToMenu();
+}
+
+function showToast(msg) {
+    const old = document.querySelector('.toast');
+    if (old) old.remove();
+    const div = document.createElement('div');
+    div.className = 'toast';
+    div.textContent = msg;
+    div.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2332;border:1px solid rgba(255,255,255,0.06);color:#f1f5f9;padding:8px 20px;border-radius:10px;font-size:0.65rem;z-index:200;animation:fadeInUp 0.3s ease;';
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 2500);
+}
+
+// === УПРАВЛЕНИЕ ===
+document.addEventListener('keydown', function(e) {
+    if (!game.running || game.over) return;
+    const now = Date.now();
+    if (now - lastLaneSwitch < 80) return;
+    if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') {
+        if (game.lane > 0) { game.lane--; playSfxLane(); lastLaneSwitch = now; }
+        e.preventDefault();
+    }
+    if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+        if (game.lane < 2) { game.lane++; playSfxLane(); lastLaneSwitch = now; }
+        e.preventDefault();
+    }
+});
+
+document.getElementById('phoneLeft').addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    if (!game.running || game.over) return;
+    const now = Date.now();
+    if (now - lastLaneSwitch < 80) return;
+    if (game.lane > 0) { game.lane--; playSfxLane(); lastLaneSwitch = now; }
+});
+document.getElementById('phoneRight').addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    if (!game.running || game.over) return;
+    const now = Date.now();
+    if (now - lastLaneSwitch < 80) return;
+    if (game.lane < 2) { game.lane++; playSfxLane(); lastLaneSwitch = now; }
+});
+
+let touchStartX = 0;
+canvas.addEventListener('touchstart', function(e) {
+    if (!game.running || game.over) return;
+    if (deviceMode === 'phone') return;
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+}, { passive: true });
+canvas.addEventListener('touchmove', function(e) {
+    if (!game.running || game.over) return;
+    if (deviceMode === 'phone') return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const diff = touch.clientX - touchStartX;
+    const now = Date.now();
+    if (now - lastLaneSwitch < 80) return;
+    if (diff > 30 && game.lane < 2) { game.lane++; touchStartX = touch.clientX; playSfxLane(); lastLaneSwitch = now; }
+    else if (diff < -30 && game.lane > 0) { game.lane--; touchStartX = touch.clientX; playSfxLane(); lastLaneSwitch = now; }
+}, { passive: false });
+
+// === КНОПКИ МЕНЮ ===
+document.querySelectorAll('.menu-btn, .mode-btn, .settings-back, .rating-back, .profile-back, .mode-back, .close-btn, .retry, .menu-btn-sm, .rating-refresh-btn, .device-btn, .profile-delete-btn, .profile-nick-input button, .toggle, .auth-panel button, .switch-btn, .confirm-delete, .cancel-delete').forEach(el => {
+    el.addEventListener('click', () => { if (sfxEnabled) playSfxClick(); });
+    el.addEventListener('touchstart', () => { if (sfxEnabled) playSfxClick(); });
+});
+
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        if (r > w/2) r = w/2; if (r > h/2) r = h/2;
+        this.moveTo(x + r, y); this.lineTo(x + w - r, y); this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r); this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h); this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r); this.quadraticCurveTo(x, y, x + r, y);
+        return this;
+    };
+}
+
+function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = settings.bgColor;
+    ctx.fillRect(0, 0, W, H);
+    const roadW = W * 0.7, roadX = (W - roadW) / 2;
+    ctx.fillStyle = 'rgba(40,50,70,0.25)';
+    ctx.fillRect(roadX, 0, roadW, H);
+    const laneW = roadW / 3;
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([20, 30]);
+    for (let i = 1; i < 3; i++) { const x = roadX + i * laneW; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(roadX, 0, roadW, H);
+    for (const car of game.cars) {
+        const cx = getLaneX(car.lane), cy = car.y, cw = W * 0.07, ch = H * 0.09;
+        ctx.fillStyle = settings.carColor;
+        ctx.shadowColor = settings.carColor + '40';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.roundRect(cx - cw/2, cy - ch/2, cw, ch, 6);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(255,200,100,0.3)';
+        ctx.fillRect(cx - cw/2 + 4, cy - ch/2 - 2, 6, 4);
+        ctx.fillRect(cx + cw/2 - 10, cy - ch/2 - 2, 6, 4);
+    }
+    for (const r of game.rubiesList) {
+        const rx = getLaneX(r.lane), ry = r.y, size = W * 0.025;
+        ctx.shadowColor = 'rgba(255,50,50,0.6)';
+        ctx.shadowBlur = 25;
+        ctx.fillStyle = '#ff6b6b';
+        ctx.beginPath();
+        ctx.arc(rx, ry, size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.beginPath();
+        ctx.arc(rx - size*0.2, ry - size*0.2, size*0.2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    const px = getLaneX(game.lane), py = H * 0.75, size = W * 0.045;
+    ctx.shadowColor = 'rgba(77,150,255,0.15)';
+    ctx.shadowBlur = 30;
+    ctx.fillStyle = '#4d96ff';
+    ctx.beginPath();
+    ctx.roundRect(px - size, py - size, size * 2, size * 1.8, 6);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ffd93d';
+    ctx.beginPath();
+    ctx.arc(px, py - size * 1.1, size * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(px - size * 0.8, py - size * 0.5, size * 1.6, size * 0.4);
+    ctx.fillRect(px - size * 0.6, py - size * 0.5, size * 1.2, size * 0.1);
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(px - size*0.25, py - size*1.2, size*0.12, 0, Math.PI * 2);
+    ctx.arc(px + size*0.25, py - size*1.2, size*0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1a1a2e';
+    ctx.beginPath();
+    ctx.arc(px - size*0.2, py - size*1.15, size*0.05, 0, Math.PI * 2);
+    ctx.arc(px + size*0.3, py - size*1.15, size*0.05, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.02)';
+    ctx.font = 'bold 80px "Segoe UI", system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round(game.speed) + ' км/ч', W/2, H/2 - 40);
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.font = '18px "Segoe UI", system-ui';
+    ctx.fillText(settings.gameTitle || 'MOROLS DRIVE', W/2, H/2 + 50);
+}
+
+function gameLoop() { updateGame(); draw(); requestAnimationFrame(gameLoop); }
+
+function init() {
+    loadSettings();
+    initSfx();
+    const lastId = localStorage.getItem('morols_last_id');
+    if (lastId !== null) {
+        document.getElementById('authId').value = lastId;
+    }
+    db.ref('accounts').once('value', snap => {
+        if (snap.exists()) {
+            if (lastId !== null && snap.child(lastId).exists()) {
+                document.getElementById('authPass').focus();
+            }
+            document.getElementById('authPanel').style.display = 'flex';
+        } else {
+            document.getElementById('authPanel').style.display = 'flex';
+            showRegister();
+        }
+    });
+    const savedDevice = localStorage.getItem('morols_device') || 'pc';
+    setDevice(savedDevice);
+    gameLoop();
+}
+
+init();
+</script>
+</body>
+</html>
